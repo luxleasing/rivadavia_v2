@@ -37,7 +37,7 @@ window.LUX_CONFIG = {
   /* ── 3 · FUENTES DE DATOS ────────────────────────────────────────────── */
   fuentes: {
     luminarias:      './luminarias_riv_wgs84.geojson',
-    arbolado:        './arboles_V2.geojson',
+    arbolado:        './arboles_v2.geojson',
     vialidades:      './vialidad_ej_6.geojson',
     cordon:          './cordon.geojson',
     banquina_vereda: './banquina_vereda.geojson',
