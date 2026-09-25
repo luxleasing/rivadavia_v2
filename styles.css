@@ -1,0 +1,691 @@
+/* ==========================================================================
+   LUX VISION · styles.css (v3 — referenciado a app.js)
+   --------------------------------------------------------------------------
+   ÍNDICE:
+     1 · Variables CSS (colores/tipografía)  → usadas por app.js vía var(--…)
+     2 · Base (tipografía global, scrollbars)
+     3 · Encabezado (degradado + KPIs)       → #main-header, .kpi-module
+     4 · Controles (buscador, selectores)    → .osm-search-input, #map-style-select
+     5 · Ficha técnica (panel lateral)       → #technical-sidebar, .ficha-celda
+     6 · Panel de estadísticas               → #stats-panel
+     7 · Leyenda                             → #legend-panel, .legend-group-title
+     8 · Popups del mapa                     → .maplibregl-popup-content
+     9 · Selección espacial por polígono     → #bbox-toolbar
+    10 · Responsive
+    11 · Addenda: buscador en ficha + stats
+   ========================================================================== */
+
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   1 · VARIABLES CSS
+   Referenciadas en app.js vía var(--nombre)
+   ══════════════════════════════════════════════════════════════════════ */
+:root {
+        /* Fuente única para todo el visor. Para cambiarla, basta reemplazar
+       este valor (y el <link> de Google Fonts en index.html). */
+    --font-ui:  "Inter", sans-serif,ui-sans-serif,system-ui;
+
+
+    --font-weight-label: 600;  /* Título campos ficha lateral */
+    --font-weight-valor: 500;
+    --font-weight-num:   700;
+    
+    /* Tracking: etiquetas en mayúsculas vs. cifras grandes */
+    --tracking-label: 0.09em; /* KPI labels, títulos de dropdown */
+    --tracking-num: -0.015em; /* cifras */
+
+       /* ── Ficha lateral · modo claro · GRIS PURO ── */
+    --ux-sidebar-bg:            #fafafa;
+    --ux-sidebar-border:        #e5e5e5;
+    --ux-celda-border:          #ececec;
+    --ux-label-color:           #18181b;   /* gris medio */
+    --ux-valor-color:           #71717a;   /* casi negro, neutro */
+
+    /* Botones (los dejo como estaban, no son parte de la ficha) */
+    --ux-accent:                #1f618d;
+    --ux-btn-primary-bg:        #92959c;
+    --ux-btn-primary-bg-hover:  #1f618d;
+       /* ── Ficha lateral · modo oscuro  · GRIS oscuro ── */
+--ux-sidebar-bg-dark:       #18181b;   /* zinc-900 — gris neutro */
+--ux-sidebar-border-dark:   #27272a;   /* zinc-800 */
+--ux-celda-border-dark:     #27272a;   /* zinc-800 */
+--ux-label-color-dark:      #a1a1aa;   /* zinc-400 — label apagado */
+--ux-valor-color-dark:      #fafafa;   /* zinc-50 — valor fuerte */
+
+    /* Alturas del encabezado: 46 + 46 = 92px (antes 106px) */
+    --header-row-h: 46px;
+
+    --accent: #5a9cf2;
+
+  /* ── Panel de estadísticas · modo claro ── */
+    --stats-bg:            #ffffff;
+    --stats-border:        #e5e5e5;
+    --stats-celda-bg:      #ffffff;
+    --stats-celda-border:  #ececec;
+    --stats-label:         #71717a;
+    --stats-valor:         #18181b;
+    --stats-sub:           #a1a1aa;
+    --stats-hover:         #fafafa;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   MODO OSCURO · override de variables
+   (por fuera de :root, aplica sólo cuando <html class="dark">)
+   ══════════════════════════════════════════════════════════════════════ */
+.dark {
+    /* Panel de estadísticas · gris neutro casi negro */
+    --stats-bg:            #18181b;   /* zinc-900 */
+    --stats-border:        #27272a;   /* zinc-800 */
+    --stats-celda-bg:      #1c1c20;   /* ligeramente más claro que el fondo */
+    --stats-celda-border:  #27272a;
+    --stats-label:         #a1a1aa;   /* zinc-400 */
+    --stats-valor:         #fafafa;   /* zinc-50 */
+    --stats-sub:           #71717a;   /* zinc-500 */
+    --stats-hover:         rgba(255, 255, 255, 0.025);
+}
+/* ══════════════════════════════════════════════════════════════════════
+   2 · BASE
+   ──────────────────────────────────────────────────────────────────────
+   Referencias cruzadas:
+ 
+     · .sidebar-scroll        → ficha técnica lateral (#technical-sidebar)
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* Tipografía global. Las cifras usan formato tabular para que los KPI
+   no "bailen" al actualizarse. */
+body, button, input, select, textarea {
+    font-family: var(--font-ui) !important;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+::selection {
+    background: rgba(90, 156, 242, 0.35);
+}
+
+/* Scrollbars discretas en paneles con scroll */
+.sidebar-scroll::-webkit-scrollbar,
+#stats-content::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb,
+#stats-content::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.35);
+    border-radius: 999px;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover,
+#stats-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   3 · ENCABEZADO  (app.js: #main-header, .kpi-module, .dropdown-content)
+   ══════════════════════════════════════════════════════════════════════ */
+#main-header {
+    background:
+        radial-gradient(900px 140% at 15% -60%, rgba(90, 156, 242, 0.14), transparent 55%),
+        radial-gradient(700px 140% at 85% -60%, rgba(34, 211, 238, 0.07), transparent 55%),
+        linear-gradient(98deg,
+            rgba(5, 7, 13, 0.80) 0%,
+            rgba(10, 17, 32, 0.78) 42%,
+            rgba(12, 21, 38, 0.78) 68%,
+            rgba(7, 11, 20, 0.80) 100%) !important;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+}
+:root:not(.dark) #main-header {
+    background:
+        radial-gradient(900px 140% at 15% -60%, rgba(90, 156, 242, 0.18), transparent 55%),
+        linear-gradient(98deg,
+            rgba(11, 18, 32, 0.82) 0%,
+            rgba(19, 35, 63, 0.80) 50%,
+            rgba(11, 18, 32, 0.82) 100%) !important;
+}
+
+.kpi-module-wrap { position: relative; display: flex; align-items: stretch; }
+/* El último wrap (filtro + botones) se centra verticalmente */
+.kpi-module-wrap.flex.items-center {
+    align-items: center !important;
+}
+
+.kpi-module-wrap::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 24%;
+    height: 52%;
+    border-left: 1px solid rgba(255, 255, 255, 0.62);
+    transition: border-color 0.15s ease;
+}
+.kpi-module-wrap:hover::before { border-left-color: rgba(255, 255, 255, 0.45); }
+:root:not(.dark) .kpi-module-wrap::before { border-left-color: rgba(255, 255, 255, 0.25); }
+.kpi-module-wrap:first-of-type::before { display: none; }
+.kpi-module {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 18px;
+    min-width: 96px;
+    cursor: pointer;
+    gap: 5px;
+    color: inherit;
+}
+.kpi-module:hover { background: rgba(255, 255, 255, 0.025) !important; }
+#btn-mod-todos .kpi-label {
+    padding-top: 8px;
+    font-size: 9px !important;    /* antes 8px */
+    letter-spacing: 0.1em !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.kpi-number {
+    font-size: 13.5px !important;
+    font-weight: var(--font-weight-num) !important;
+    line-height: 1.15 !important;
+    letter-spacing: var(--tracking-num) !important;
+    color: #ffffff !important;              /* antes #f1f5f9 */
+    transition: color 0.15s ease;
+}
+.kpi-label {
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    letter-spacing: var(--tracking-label) !important;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.65) !important;   /* antes 0.38 */
+    transition: color 0.15s ease;
+}
+#main-header .kpi-module.layer-button-off .kpi-number { color: rgba(255, 255, 255, 0.18) !important; }
+#main-header .kpi-module.layer-button-off .kpi-label  { color: rgba(255, 255, 255, 0.14) !important; }
+#main-header .kpi-module.layer-button-on  .kpi-number { color: #ffffff !important; }
+#main-header .kpi-module.layer-button-on  .kpi-label  { color: rgba(255, 255, 255, 0.75) !important; }   /* antes 0.55 */
+.kpi-module-wrap:hover .kpi-number { color: #ffffff !important; }
+.kpi-module-wrap:hover .kpi-label  { color: rgba(255, 255, 255, 0.8) !important; }   /* antes 0.6 */
+.kpi-module-wrap:hover > .dropdown-content { display: block !important; }
+
+.lum-category.is-active {
+    border-color: rgba(34, 211, 238, 0.5) !important;
+    background: rgba(34, 211, 238, 0.06);
+}
+
+#btn-bbox-select.tool-active {
+    background: rgba(34, 211, 238, 0.18) !important;
+    border-color: rgba(34, 211, 238, 0.6) !important;
+    color: #22d3ee !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   4 · CONTROLES  (app.js: inicializarBuscadorOSM, cambiarEstiloMapa)
+   ══════════════════════════════════════════════════════════════════════ */
+.osm-search-input {
+    width: 240px;
+    height: 28px;
+    padding: 0 10px 0 30px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #e2e8f0;
+    font-size: 11px;
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.osm-search-input::placeholder { color: rgba(148, 163, 184, 0.6); }
+.osm-search-input:focus {
+    border-color: rgba(90, 156, 242, 0.65);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.osm-result-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #cbd5e1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.osm-result-item:hover { background: rgba(90, 156, 242, 0.14); color: #fff; }
+.osm-result-item:last-child { border-bottom: none; }
+
+#map-style-select {
+    background: transparent !important;
+    border: none !important;
+    color: #e2e8f0 !important;
+    font-size: 11px !important;
+    letter-spacing: 0.01em;
+}
+#map-style-select option { background: #0a0e1a; color: #e2e8f0; }
+
+#theme-toggle {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+#theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+}
+
+#filtro-distrito {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #cbd5e1 !important;
+}
+#filtro-distrito option { background: #0a0e1a; color: #e2e8f0; }
+
+#btn-stats, #btn-bbox-select {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+#btn-stats:hover, #btn-bbox-select:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+}
+
+.dropdown-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.dropdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   5 · FICHA TÉCNICA  (app.js: renderCeldasFicha, mostrarFicha)
+   ══════════════════════════════════════════════════════════════════════ */
+#technical-sidebar {
+    background-color: var(--ux-sidebar-bg) !important;
+    border-color: var(--ux-sidebar-border) !important;
+    color: #0f172a;
+}
+.dark #technical-sidebar {
+    background-color: var(--ux-sidebar-bg-dark) !important;
+    border-color: var(--ux-sidebar-border-dark) !important;
+    color: var(--ux-valor-color-dark);
+}
+#technical-sidebar > div:first-child { border-color: var(--ux-sidebar-border) !important; }
+.dark #technical-sidebar > div:first-child { border-color: var(--ux-sidebar-border-dark) !important; }
+#technical-sidebar h3 { color: #1b2a47 !important; letter-spacing: 0.08em; }
+.dark #technical-sidebar h3 { color: #f1f5f9 !important; }
+
+.sv-card {
+    background: var(--ux-sidebar-bg);
+    border: 1px solid var(--ux-sidebar-border);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    overflow: hidden;
+}
+.dark .sv-card {
+    background: var(--ux-sidebar-bg-dark);
+    border-color: var(--ux-sidebar-border-dark);
+}
+.sv-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--ux-sidebar-border);
+    background: #f8f9fa;
+}
+.dark .sv-card-header {
+    border-color: var(--ux-sidebar-border-dark);
+    background: rgba(148, 163, 184, 0.06);
+}
+.sv-card-header span { font-size: 12px; font-weight: 700; color: #1e293b; }
+.dark .sv-card-header span { color: #e2e8f0; }
+.sv-card-header a { font-size: 11px; font-weight: 600; color: #2980b9; text-decoration: none; }
+.sv-card-header a:hover { color: var(--ux-accent); }
+
+.ficha-grid {
+    background: var(--ux-sidebar-bg);
+    border: 1px solid var(--ux-celda-border);  /* ficha lateral, borde exterior */
+    border-radius: 6px;
+    overflow: hidden;
+}
+.dark .ficha-grid {
+    background: var(--ux-sidebar-bg-dark);
+    border-color: var(--ux-celda-border-dark);
+}
+.ficha-celda { padding: 10px 12px; min-height: 52px; }
+.dark .ficha-celda { border-color: var(--ux-celda-border-dark) !important; }
+
+.ficha-label {
+    display: block;
+    font-size: 9.5px;
+    font-weight: var(--font-weight-label);
+    color: var(--ux-label-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 3px;
+}
+.dark .ficha-label { color: var(--ux-label-color-dark); }
+
+.ficha-valor {
+    display: block;
+    font-size: 12.5px;
+    font-weight: var(--font-weight-valor);
+    color: var(--ux-valor-color);
+    letter-spacing: 0.01em;
+    word-break: break-word;
+}
+.dark .ficha-valor { color: var(--ux-valor-color-dark); }
+
+
+
+/* ── Modo CLARO: gris muy tenue ── */
+.ficha-celda {
+    border-bottom: 1px solid #eef2f6;   /* ← horizontal (nueva, para todas) */
+}
+.ficha-celda.border-r {
+    border-right-color: #eef2f6 !important;   /* ← vertical (ya existía) */
+}
+
+/* Última fila: sin línea inferior (evita borde redundante con el marco) */
+.ficha-celda:nth-last-child(-n+2) {
+    border-bottom: none;
+}
+
+/* ── Modo OSCURO: gris azulado apenas perceptible ── */
+.dark .ficha-celda {
+    border-bottom-color: rgba(148, 163, 184, 0.10);
+}
+.dark .ficha-celda.border-r {
+    border-right-color: rgba(148, 163, 184, 0.10) !important;
+}
+
+
+/* ── linea entre xy y google st. view Modo CLARO: gris muy tenue ── */
+#technical-sidebar > div.border-b,
+#technical-sidebar .border-b {
+    border-bottom-color: #eef2f6 !important;
+}
+
+/* ── linea entre xy y google st. view- Modo OSCURO: gris azulado  ── */
+.dark #technical-sidebar > div.border-b,
+.dark #technical-sidebar .border-b {
+    border-bottom-color: rgba(148, 163, 184, 0.10) !important;
+}
+
+#btn-export-pdf {
+    background: var(--ux-btn-primary-bg) !important;
+    border-radius: 6px;
+    letter-spacing: 0.03em;
+}
+#btn-export-pdf:hover { background: var(--ux-btn-primary-bg-hover) !important; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   6 · PANEL DE ESTADÍSTICAS  (app.js: renderizarEstadisticas)
+   ══════════════════════════════════════════════════════════════════════ */
+#stats-panel { will-change: transform; }
+
+/* Sólo dentro del panel de stats: subimos 1 punto la tipografía. */
+#stats-panel [class*="text-[10px]"] { font-size: 11px !important; }
+#stats-panel [class*="text-[11px]"] { font-size: 12px !important; }
+#stats-panel [class*="text-[15px]"] { font-size: 16px !important; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   7 · LEYENDA  (app.js: renderizarLeyenda)
+   ══════════════════════════════════════════════════════════════════════ */
+#legend-panel { font-size: 11.5px; }
+
+.legend-group-title {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    padding-top: 6px;
+}
+.legend-group-title:first-child { padding-top: 0; }
+.dark .legend-group-title { color: #94a3b8; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   8 · POPUPS DEL MAPA  (app.js: abrirPopupReclamo)
+   ══════════════════════════════════════════════════════════════════════ */
+.dark .maplibregl-popup-content {
+    background: #051c63 !important;
+    color: #e7edf3 !important;
+    border: 1px solid #0b2c82;
+}
+.dark .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #040d3d !important; }
+html:not(.dark) .maplibregl-popup-content {
+    background: #ffffff !important;
+    color: #020410 !important;
+    border: 1px solid #e7edf3;
+}
+html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #ffffff !important; }
+.maplibregl-popup-content { font-family: var(--font-ui) !important; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   9 · SELECCIÓN ESPACIAL POR POLÍGONO  (app.js: actualizarBarraPoligono)
+   ══════════════════════════════════════════════════════════════════════ */
+#bbox-toolbar {
+    display: flex;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#bbox-toolbar.hidden { display: none !important; }
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   10 · RESPONSIVE
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 1360px) { .osm-search-input { width: 180px; } }
+@media (max-width: 1180px) {
+    .kpi-module { padding: 4px 13px; min-width: 84px; }
+    .kpi-number { font-size: 13px !important; }
+}
+@media (max-width: 900px) {
+    .kpi-module { padding: 4px 9px; min-width: 72px; }
+    .kpi-number { font-size: 12px !important; }
+    .kpi-label  { font-size: 7.5px !important; }
+    #coords-widget { display: none !important; }
+}
+@media (max-width: 700px) {
+    .kpi-module { padding: 4px 6px; min-width: 58px; }
+    .kpi-number { font-size: 11.5px !important; }
+    .kpi-label  { font-size: 7px !important; letter-spacing: 0.05em !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   11 · ADDENDA · Buscador en ficha lateral + tipografía de estadísticas
+   ══════════════════════════════════════════════════════════════════════ */
+
+#technical-sidebar .osm-search-input {
+    width: 100%;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #0f172a;
+}
+.dark #technical-sidebar .osm-search-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(148, 163, 184, 0.25);
+    color: #e2e8f0;
+}
+#technical-sidebar .osm-result-item { color: #334155; border-bottom-color: #f1f5f9; }
+#technical-sidebar .osm-result-item:hover { background: rgba(90, 156, 242, 0.12); color: #0f172a; }
+.dark #technical-sidebar .osm-result-item { color: #cbd5e1; border-bottom-color: rgba(148, 163, 184, 0.12); }
+#osm-search-results { background: #ffffff !important; border-color: #e2e8f0 !important; }
+.dark #osm-search-results {
+    background: #0b1528 !important;
+    border-color: rgba(148, 163, 184, 0.25) !important;
+}
+
+#stats-panel h3 {
+    font-weight: 600 !important;
+    letter-spacing: 0.05em !important;
+}
+#stats-panel .font-bold { font-weight: 600 !important; }
+#stats-panel .font-semibold { font-weight: 500 !important; }
+
+
+/* En pantallas chicas la barra de filtro ocupa todo el ancho inferior */
+@media (max-width: 700px) {
+    #bbox-toolbar {
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        transform: none;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   STREET VIEW · adaptación al modo oscuro
+   Google renderiza el iframe en claro (cross-origin, no se puede tocar).
+   Atenuamos con filter para integrarlo al panel gris oscuro.
+   ══════════════════════════════════════════════════════════════════════ */
+.dark #street-view-frame {
+    filter: brightness(0.85) contrast(1.05);
+}
+
+/* Placeholder (cuando no hay punto seleccionado) */
+.dark #sv-placeholder {
+    background: #1c1c20 !important;
+}
+.dark #sv-placeholder span {
+    color: #a1a1aa !important;
+}
+.dark #sv-placeholder svg {
+    color: #3f3f46 !important;
+}
+
+/* Header del card "Google Street View" */
+.dark .sv-card-header {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-color: #27272a !important;
+}
+.dark .sv-card-header span {
+    color: #e4e4e7 !important;
+}
+.dark .sv-card-header a {
+    color: #71717a !important;
+}
+.dark .sv-card-header a:hover {
+    color: #a1a1aa !important;
+}
+
+
+
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   IDENTIDAD MUNICIPIO · Header (naranja de marca, modo claro y oscuro)
+   ACTIVAR:    <html lang="es" class="theme-muni">
+   DESACTIVAR: quitar la clase
+   ──────────────────────────────────────────────────────────────────────
+   Va al FINAL de styles.css, después de toda tu base.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── 1 · Fondo del header (mismo naranja en claro y oscuro) ── */
+.theme-muni #main-header,
+.theme-muni:not(.dark) #main-header,
+.theme-muni.dark #main-header {
+    background: linear-gradient(98deg,
+        #E5660B 0%,
+        #FA7313 45%,
+        #F98634 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 8px 28px rgba(250, 115, 19, 0.35) !important;
+}
+
+/* ── 2 · KPIs en blanco sobre el naranja ── */
+.theme-muni #main-header .kpi-number { color: #ffffff !important; }
+.theme-muni #main-header .kpi-label  { color: rgba(255, 255, 255, 0.75) !important; }
+.theme-muni #main-header .kpi-module-wrap::before {
+    border-left-color: rgba(255, 255, 255, 0.30);
+}
+
+/* ── 3 · Botones del header: stats, selección, toggle ── */
+.theme-muni #main-header #btn-stats,
+.theme-muni #main-header #btn-bbox-select,
+.theme-muni #main-header #theme-toggle {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+}
+.theme-muni #main-header #btn-stats:hover,
+.theme-muni #main-header #btn-bbox-select:hover,
+.theme-muni #main-header #theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.30) !important;
+    color: #ffffff !important;
+}
+/* Iconos SVG dentro de esos botones en blanco */
+.theme-muni #main-header #btn-stats svg,
+.theme-muni #main-header #btn-bbox-select svg,
+.theme-muni #main-header #theme-toggle svg {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+/* Botón de selección cuando está activo: fondo blanco, icono naranja */
+.theme-muni #main-header #btn-bbox-select.tool-active {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
+    color: #FA7313 !important;
+}
+.theme-muni #main-header #btn-bbox-select.tool-active svg {
+    color: #FA7313 !important;
+    stroke: #FA7313 !important;
+}
+
+/* ── 4 · Selector "Modo Claro" y DISTRITO: coherentes con el header ── */
+.theme-muni #main-header select,
+.theme-muni #main-header #filtro-distrito,
+.theme-muni #main-header #theme-mode-select {
+    background: rgba(255, 255, 255, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    color: #ffffff !important;
+}
+.theme-muni #main-header select option,
+.theme-muni #main-header #filtro-distrito option {
+    background: #ffffff;
+    color: #333333;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   FECHA DE ACTUALIZACIÓN DEL HEADER
+   ══════════════════════════════════════════════════════════════════════ */
+#main-header .text-slate-500,
+#main-header [class*="text-slate-500"],
+#main-header [class*="text-[8.5px]"] {
+    color: rgba(255, 255, 255, 0.72) !important;
+    font-weight: 500 !important;
+    font-size: 9.5px !important;
+    letter-spacing: 0.02em;
+}
+
+#main-header #fecha-ultima-actualizacion {
+    color: rgba(255, 255, 255, 0.92) !important;
+    font-weight: 600 !important;
+}
