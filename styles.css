@@ -498,9 +498,22 @@ html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bott
 }
 #bbox-toolbar.hidden { display: none !important; }
 
+
+
+
 /* ══════════════════════════════════════════════════════════════════════
    10 · RESPONSIVE — Desktop → Tablet → Mobile
    ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Botón ☰ de la ficha técnica: visible SOLO en mobile ── */
+#btn-toggle-sidebar {
+    display: none;
+}
+@media (max-width: 900px) {
+    #btn-toggle-sidebar {
+        display: flex !important;
+    }
+}
 
 /* ── Tablets horizontales y laptops chicas (hasta 1360px) ── */
 @media (max-width: 1360px) {
@@ -544,25 +557,32 @@ html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bott
 
     #main-header h1 { display: none !important; }
 
+    /* Ficha técnica: overlay deslizable desde la izquierda */
     #technical-sidebar {
-        position: absolute;
-        left: 0; top: 0;
+        position: fixed !important;
+        left: 0 !important;
+        top: 92px !important;       /* debajo del header */
+        height: calc(100vh - 92px) !important;
         width: 85vw;
         max-width: 320px;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
-        z-index: 30;
+        z-index: 50 !important;
+        box-shadow: none;
     }
     #technical-sidebar.is-open {
         transform: translateX(0);
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
     }
 
+    /* Panel de stats: ancho completo, siempre encima */
     #stats-panel {
-        width: calc(100vw - 24px);
-        max-width: 100vw;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        z-index: 60 !important;
     }
 
+    /* Barra de filtro poligonal: ancho completo inferior */
     #bbox-toolbar {
         left: 8px;
         right: 8px;
@@ -572,8 +592,10 @@ html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bott
         flex-wrap: wrap;
     }
 
+    /* Leyenda */
     #legend-control { right: 8px; bottom: 8px; }
 
+    /* Dropdowns de KPIs: centrados y con ancho controlado */
     .dropdown-content {
         width: calc(100vw - 24px) !important;
         max-width: 280px;
@@ -591,8 +613,13 @@ html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bott
     #brand-municipio img { height: 22px; }
     #main-header .text-\[8\.5px\] { display: none; }
     #filtro-distrito { min-width: 110px !important; font-size: 10px !important; }
-    #stats-panel { width: 100vw; }
+    #stats-panel { width: 100vw !important; }
 }
+
+
+
+
+
 /* ══════════════════════════════════════════════════════════════════════
    11 · ADDENDA · Buscador en ficha lateral + tipografía de estadísticas
    ══════════════════════════════════════════════════════════════════════ */
