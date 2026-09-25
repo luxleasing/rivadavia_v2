@@ -2616,6 +2616,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarLeyenda();
     inicializarAcordeonFicha();
     inicializarExportacionPDF();
+   inicializarToggleSidebarMobile(); 
 });
 
 window.LUX = {
@@ -2629,3 +2630,33 @@ window.LUX = {
     restaurarDatosCompletos,
     calcularKPIs
 };
+
+
+
+/**
+ * ficha técnica para mobile.
+ * El botón ☰ solo aparece cuando la pantalla es ≤ 900px (ver styles.css).
+ */
+function inicializarToggleSidebarMobile() {
+    const btn = document.getElementById('btn-toggle-sidebar');
+    const sidebar = document.getElementById('technical-sidebar');
+    if (!btn || !sidebar) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('is-open');
+    });
+
+    // Cerrar al hacer clic fuera (solo en mobile)
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth > 900) return;
+        if (!sidebar.classList.contains('is-open')) return;
+        if (sidebar.contains(e.target) || btn.contains(e.target)) return;
+        sidebar.classList.remove('is-open');
+    });
+
+    // Cerrar al agrandar la pantalla
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900) sidebar.classList.remove('is-open');
+    });
+}
