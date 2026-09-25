@@ -498,27 +498,101 @@ html:not(.dark) .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bott
 }
 #bbox-toolbar.hidden { display: none !important; }
 
-
 /* ══════════════════════════════════════════════════════════════════════
-   10 · RESPONSIVE
+   10 · RESPONSIVE — Desktop → Tablet → Mobile
    ══════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1360px) { .osm-search-input { width: 180px; } }
+
+/* ── Tablets horizontales y laptops chicas (hasta 1360px) ── */
+@media (max-width: 1360px) {
+    .osm-search-input { width: 180px; }
+}
+
+/* ── Tablets horizontales chicas (hasta 1180px) ── */
 @media (max-width: 1180px) {
     .kpi-module { padding: 4px 13px; min-width: 84px; }
     .kpi-number { font-size: 13px !important; }
 }
+
+/* ── Tablets verticales y mobile grande (hasta 900px) ── */
 @media (max-width: 900px) {
-    .kpi-module { padding: 4px 9px; min-width: 72px; }
+    #main-header > div:last-child {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 0 8px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    #main-header > div:last-child::-webkit-scrollbar { display: none; }
+
+    .kpi-module { padding: 4px 10px; min-width: 76px; flex-shrink: 0; }
     .kpi-number { font-size: 12px !important; }
     .kpi-label  { font-size: 7.5px !important; }
+
+    #technical-sidebar { width: 260px; }
+    #stats-panel { width: 320px; }
+
+    #main-header h1 { display: block !important; font-size: 11px !important; }
     #coords-widget { display: none !important; }
-}
-@media (max-width: 700px) {
-    .kpi-module { padding: 4px 6px; min-width: 58px; }
-    .kpi-number { font-size: 11.5px !important; }
-    .kpi-label  { font-size: 7px !important; letter-spacing: 0.05em !important; }
+    .osm-search-input { width: 140px; }
 }
 
+/* ── Mobile (hasta 700px) ── */
+@media (max-width: 700px) {
+    .kpi-module { padding: 4px 8px; min-width: 62px; }
+    .kpi-number { font-size: 11.5px !important; }
+    .kpi-label  { font-size: 7px !important; letter-spacing: 0.05em !important; }
+
+    #main-header h1 { display: none !important; }
+
+    #technical-sidebar {
+        position: absolute;
+        left: 0; top: 0;
+        width: 85vw;
+        max-width: 320px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 30;
+    }
+    #technical-sidebar.is-open {
+        transform: translateX(0);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+    }
+
+    #stats-panel {
+        width: calc(100vw - 24px);
+        max-width: 100vw;
+    }
+
+    #bbox-toolbar {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        transform: none;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    #legend-control { right: 8px; bottom: 8px; }
+
+    .dropdown-content {
+        width: calc(100vw - 24px) !important;
+        max-width: 280px;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+    }
+}
+
+/* ── Mobile chico (hasta 480px) ── */
+@media (max-width: 480px) {
+    body { font-size: 11px; }
+    #main-header > div:first-child { padding: 0 8px; gap: 6px; }
+    #brand-lux img { height: 26px; }
+    #brand-municipio img { height: 22px; }
+    #main-header .text-\[8\.5px\] { display: none; }
+    #filtro-distrito { min-width: 110px !important; font-size: 10px !important; }
+    #stats-panel { width: 100vw; }
+}
 /* ══════════════════════════════════════════════════════════════════════
    11 · ADDENDA · Buscador en ficha lateral + tipografía de estadísticas
    ══════════════════════════════════════════════════════════════════════ */
