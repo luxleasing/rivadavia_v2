@@ -1,7 +1,7 @@
 /* ============================================================================
-   LUX VISION · CONFIGURACIÓN MUNICIPAL
+   LUX  · CONFIGURACIÓN MUNICIPAL
    ----------------------------------------------------------------------------
-   ÚNICO archivo que hay que editar para replicar el visor en otro municipio.
+  
 
    ÍNDICE:
      1 · municipio       → identidad, centro/zoom y logos
@@ -61,9 +61,9 @@ window.LUX_CONFIG = {
     fecha:        ['Fecha', 'FECHA', 'fecha', 'Fecha Solución'],
     fechaSolucion:['Fecha Solución', 'FECHA_SOLUCION', 'fecha_solucion'],
 
-    /* Categorización automática por texto libre de la descripción.
+    /* Categorización por texto libre de la descripción.
        Se evalúa en orden de aparición: el primer match gana.
-       Para agregar una categoría nueva, sumar una clave más acá. */
+       */
     categorias: {
       'Reconversión a LED': [
         'sodio a led', 'cambio a led', 'cambiar a led', 'reemplazar por led',
@@ -86,7 +86,7 @@ window.LUX_CONFIG = {
     }
   },
 
-  /* Conexión Google Sheets (mismos datos del popup, campos de coordenadas) */
+  /* Conexión Google Sheets -mismos datos del popup */
   reclamosCsv: {
     url: 'https://docs.google.com/spreadsheets/d/1xrjKtepiEjcvpucty6ZAzoh_3C88Plcg/gviz/tq?tqx=out:csv',
     camposCoordenadas: {
