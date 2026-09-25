@@ -1,7 +1,7 @@
 /* ============================================================================
-   LUX VISION · Núcleo del visor
+   LUX  · Núcleo del visor
    ----------------------------------------------------------------------------
-   Todo lo municipal vive en `config.js`. Este archivo es agnóstico al municipio.
+   Todo lo municipal en `config.js`. 
 
    ÍNDICE DE MÓDULOS:
      01 · Configuración y constantes
@@ -24,7 +24,7 @@
      18 · Panel de estadísticas ejecutivo
      19 · Utilidades de UI
      20 · Exportación PDF
-     21 · Arranque
+     21 · Inicio
    ============================================================================ */
 
 
@@ -135,11 +135,6 @@ function setTexto(id, valor) {
 
 /**
  * Anima el texto de un elemento desde 0 hasta el valor numérico final.
- * Usa requestAnimationFrame para fluidez. Respeta prefers-reduced-motion.
- *
- * @param {string} id          — ID del elemento
- * @param {number} valorFinal  — valor numérico final
- * @param {object} opciones    — { duracion, decimales, sufijo, prefijo, formato }
  */
 function animarContador(id, valorFinal, opciones = {}) {
     const el = document.getElementById(id);
@@ -159,7 +154,7 @@ function animarContador(id, valorFinal, opciones = {}) {
         return;
     }
 
-    // Respeta accesibilidad: si el usuario desactivó animaciones, escribimos directo
+    //  accesibilidad
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         el.innerText = formatear(num);
         return;
@@ -175,7 +170,7 @@ function animarContador(id, valorFinal, opciones = {}) {
         }) + sufijo;
     }
 
-    // Cancelamos animación previa en el mismo elemento
+    // Cancela animación
     if (el._animacionRAF) cancelAnimationFrame(el._animacionRAF);
 
     function frame(ahora) {
@@ -217,7 +212,7 @@ function restaurarDatosCompletos() {
 
 /* ── Helpers de estadísticas ───────────────────────────────────────── */
 
-/** Parsea fechas en múltiples formatos (dd/mm/yyyy, ISO, etc.). */
+/**  fechas en múltiples formatos (dd/mm/yyyy, ISO, etc.). */
 function parsearFechaFlexible(valor) {
     if (!valor || valor === 'null' || valor === 'None') return null;
     const s = String(valor).trim();
@@ -234,8 +229,6 @@ function parsearFechaFlexible(valor) {
 
 /**
  * Categoriza un reclamo según el texto de su descripción.
- * Usa las reglas definidas en config.popupReclamos.categorias.
- * El orden de las categorías importa (primer match gana).
  */
 function categorizarReclamo(texto) {
     const cats = APP_CONFIG.popupReclamos?.categorias;
@@ -252,7 +245,7 @@ function categorizarReclamo(texto) {
     return 'Otros';
 }
 
-/** Cuenta features por un campo. Nulos/vacíos agrupados bajo `labelVacio`. */
+/** features por un campo. Nulos/vacíos agrupados bajo `labelVacio`. */
 function contarPorCampo(features, campos, labelVacio = 'Sin dato') {
     const acc = {};
     features.forEach(f => {
@@ -490,7 +483,7 @@ function normalizarGeoJSON(data, key) {
     return data;
 }
 
-/* Parser CSV tolerante: comillas dobles, comas internas y saltos CRLF. */
+/*  CSV tolerante: comillas dobles, comas internas y saltos CRLF. */
 function parsearCSV(texto) {
     const filas = [];
     let fila = [], campo = '', entreComillas = false;
@@ -903,13 +896,11 @@ function formatearValorFicha(etiqueta, valor) {
    Renderiza la ficha técnica del activo seleccionado a partir de
    `config.capas.*.fichaPrimaria` + `fichaSecundaria`.
 
-   Además, acumula los pares {etiqueta, valor} en `window.activoSeleccionadoConfig`
-   para que la exportación PDF pueda reconstruir la tabla completa.
+
    ══════════════════════════════════════════════════════════════════════ */
 
 /**
- * Rellena un contenedor con N celdas { etiqueta, valor }.
- * Si se pasa `acumulador`, guarda cada par para uso posterior (PDF).
+ * Si se pasa `acumulador`, guarda cada para uso posterior (PDF).
  */
 function renderCeldasFicha(containerId, items, props, acumulador = null) {
     const cont = document.getElementById(containerId);
@@ -930,7 +921,7 @@ function renderCeldasFicha(containerId, items, props, acumulador = null) {
         `;
         cont.appendChild(celda);
 
-        // Acumulamos para reuso (ej: exportación PDF)
+        // Acumula para reuso (ej: exportación PDF)
         if (acumulador) acumulador.push({ etiqueta: item.etiqueta, valor: valorFmt });
     });
 }
@@ -946,13 +937,13 @@ function mostrarFicha(feature) {
     setTexto('info-id', getCampo(props, config.idCampo, 'N/A'));
     setTexto('info-elemento', config.elementoFijo || '-');
 
-    // Recolectamos todos los {etiqueta, valor} para reuso en el PDF
+    // Recolecta todos los {etiqueta, valor} para reuso en el PDF
     const valoresFicha = [];
 
     renderCeldasFicha('ficha-primaria',   config.fichaPrimaria   || [], props, valoresFicha);
     renderCeldasFicha('ficha-secundaria', config.fichaSecundaria || [], props, valoresFicha);
 
-    // Guardamos el estado actual del activo seleccionado
+    // Guarda el estado actual del activo seleccionado
     window.activoSeleccionadoConfig = { config, valores: valoresFicha };
 
     // Reset del acordeón al cambiar de feature
@@ -1093,8 +1084,8 @@ function abrirPopupReclamo(feature) {
 function aplicarConfiguracionMunicipal() {
     const { municipio } = APP_CONFIG;
 
-    // El título se arma desde config.js → municipio.tituloAplicacion + municipio.nombre
-    // Ej: "Monitoreo de Activos Urbanos • Municipio de Rivadavia"
+    // El título  desde config.js → municipio.tituloAplicacion + municipio.nombre
+   
     document.title = `Lux Leasing — ${municipio.tituloAplicacion}`;
 
     const h1 = document.querySelector('header h1');
@@ -2474,11 +2465,10 @@ function inicializarExportacionPDF() {
                     <a href="${mapUrl}" target="_blank" style="color:#0284c7; word-break:break-all; font-weight:bold;">${mapUrl}</a>
                 </div>`;
 
-            // Recolectamos los {etiqueta, valor} que ya se renderizaron
-            // en la ficha lateral (guardados por mostrarFicha()).
+         
             const valoresFicha = window.activoSeleccionadoConfig?.valores || [];
 
-            // Filas con fondo alternado para lectura cómoda
+      
             const filasHtml = valoresFicha.map((f, i) => {
                 const bg = i % 2 === 0 ? '#ffffff' : '#fafaf9';
                 return `
@@ -2508,7 +2498,6 @@ function inicializarExportacionPDF() {
             tablaFichaHtml = `<div style="padding:20px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; text-align:center; color:#64748b; font-size:11.5px; margin-bottom:25px;">Reporte general. Haga clic sobre un activo para incluir su ficha técnica.</div>`;
         }
 
-        // ── Contenedor temporal fuera de pantalla para renderizar el PDF ──
         const printContainer = document.createElement('div');
         Object.assign(printContainer.style, {
             position: 'absolute', left: '-9999px', top: '-9999px',
@@ -2566,14 +2555,14 @@ function inicializarExportacionPDF() {
                 const imgHeightPx = canvas.height;
 
                 // Escalamos: la imagen ocupa todo el ancho útil de la página
-                // (dejamos 0 de margen porque el diseño ya trae padding interno)
+               
                 const imgWidthMm = pageWidth;
                 const imgHeightMm = (imgHeightPx * imgWidthMm) / imgWidthPx;
 
-                // ¿Cuántas páginas necesitamos?
+                //  páginas 
                 const totalPaginas = Math.ceil(imgHeightMm / pageHeight);
 
-                // Data URL (una sola vez, para reusar en cada página)
+         
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
                 // Altura (en px del canvas) que entra en cada página:
@@ -2587,7 +2576,7 @@ function inicializarExportacionPDF() {
 
                     if (!esPrimera) pdf.addPage();
 
-                    // Colocamos la imagen completa desplazada hacia arriba por el offset.
+                    // imagen completa
                     // jsPDF recorta automáticamente lo que sale de la página.
                     pdf.addImage(
                         imgData,
@@ -2610,7 +2599,7 @@ function inicializarExportacionPDF() {
     });
 }
 /* ══════════════════════════════════════════════════════════════════════
-   21 · ARRANQUE
+   21 · Inicio
    ══════════════════════════════════════════════════════════════════════ */
 
 aplicarConfiguracionMunicipal();
